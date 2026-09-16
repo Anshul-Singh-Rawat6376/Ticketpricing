@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ticket Pricing Counter</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
+</head>
+<body>
+    <main class="shell">
+        <header class="topbar">
+            <div class="brand-mark" aria-hidden="true">TP</div>
+            <div>
+                <p class="eyebrow">Multiplex counter / Friday night</p>
+                <h1>Ticket pricing desk</h1>
+            </div>
+            <div class="status" id="api-status"><span class="status-dot"></span>Local preview</div>
+        </header>
+
+        <section class="workspace" aria-label="Ticket pricing workspace">
+            <section class="panel booking-panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">01 / Build booking</p>
+                        <h2>Select seats</h2>
+                    </div>
+                    <span class="ticket-count" id="ticket-count">0 tickets</span>
+                </div>
+
+                <div class="tier-list">
+                    <article class="tier-row" data-tier="silver">
+                        <div class="tier-swatch silver"></div>
+                        <div class="tier-name"><strong>Silver</strong><span>Standard view</span></div>
+                        <label class="field compact"><span>Price</span><div class="input-prefix"><span>₹</span><input class="price-input" type="number" min="0" step="0.01" value="100.00" aria-label="Silver price"></div></label>
+                        <label class="field quantity"><span>Qty</span><input class="quantity-input" type="number" min="0" step="1" value="0" aria-label="Silver quantity"></label>
+                        <label class="availability"><input class="availability-input" type="checkbox" checked><span>Available</span></label>
+                    </article>
+                    <article class="tier-row" data-tier="gold">
+                        <div class="tier-swatch gold"></div>
+                        <div class="tier-name"><strong>Gold</strong><span>Enhanced comfort</span></div>
+                        <label class="field compact"><span>Price</span><div class="input-prefix"><span>₹</span><input class="price-input" type="number" min="0" step="0.01" value="150.00" aria-label="Gold price"></div></label>
+                        <label class="field quantity"><span>Qty</span><input class="quantity-input" type="number" min="0" step="1" value="0" aria-label="Gold quantity"></label>
+                        <label class="availability"><input class="availability-input" type="checkbox" checked><span>Available</span></label>
+                    </article>
+                    <article class="tier-row" data-tier="recliner">
+                        <div class="tier-swatch recliner"></div>
+                        <div class="tier-name"><strong>Recliner</strong><span>Premium lounge</span></div>
+                        <label class="field compact"><span>Price</span><div class="input-prefix"><span>₹</span><input class="price-input" type="number" min="0" step="0.01" value="250.00" aria-label="Recliner price"></div></label>
+                        <label class="field quantity"><span>Qty</span><input class="quantity-input" type="number" min="0" step="1" value="0" aria-label="Recliner quantity"></label>
+                        <label class="availability"><input class="availability-input" type="checkbox" checked><span>Available</span></label>
+                    </article>
+                </div>
+
+                <div class="settings">
+                    <div class="setting-copy"><span class="setting-icon">%</span><div><strong>Membership offer</strong><span>5% off after festival discount, capped at ₹100</span></div></div>
+                    <label class="toggle"><input id="member-toggle" type="checkbox"><span class="toggle-track"></span><span class="sr-only">Apply membership offer</span></label>
+                </div>
+
+                <div class="rules-note"><span>i</span><p>Festival offer is active: 10% off base tickets. Convenience fee is ₹20 per ticket. GST is 18% on the discounted amount plus fee.</p></div>
+            </section>
+
+            <aside class="panel bill-panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">02 / Review</p>
+                        <h2>Booking bill</h2>
+                    </div>
+                    <span class="bill-id">LIVE</span>
+                </div>
+                <div id="bill-message" class="bill-message">Add tickets to begin</div>
+                <div id="line-items" class="line-items"></div>
+                <div class="bill-breakdown">
+                    <div><span>Base amount</span><strong id="base-amount">₹0.00</strong></div>
+                    <div class="discount"><span>Festival discount</span><strong id="festival-discount">-₹0.00</strong></div>
+                    <div class="discount"><span>Member discount</span><strong id="member-discount">-₹0.00</strong></div>
+                    <div class="separator"></div>
+                    <div><span>Convenience fee</span><strong id="convenience-fee">₹0.00</strong></div>
+                    <div><span>GST</span><strong id="gst">₹0.00</strong></div>
+                </div>
+                <div class="total-row"><span>Final total</span><strong id="final-total">₹0.00</strong></div>
+                <button class="primary-button" id="clear-button" type="button">Clear booking <span aria-hidden="true">↗</span></button>
+            </aside>
+        </section>
+        <footer><span>Exact paisa pricing</span><span>All amounts in INR</span><span>Ready for checkout</span></footer>
+    </main>
+</body>
+</html>
