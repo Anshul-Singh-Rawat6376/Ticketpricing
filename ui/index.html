@@ -1,88 +1,1156 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Ticket Pricing Counter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Multiplex Pricing Engine</title>
+
     <link rel="stylesheet" href="styles.css">
-    <script src="app.js" defer></script>
 </head>
+
 <body>
-    <main class="shell">
-        <header class="topbar">
-            <div class="brand-mark" aria-hidden="true">TP</div>
-            <div>
-                <p class="eyebrow">Multiplex counter / Friday night</p>
-                <h1>Ticket pricing desk</h1>
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <header class="navbar">
+
+        <div class="nav-container">
+
+            <div class="logo">
+
+                <div class="logo-icon">
+                    🎬
+                </div>
+
+                <div>
+                    <h2>CineBill</h2>
+                    <span>PRICING ENGINE</span>
+                </div>
+
             </div>
-            <div class="status" id="api-status"><span class="status-dot"></span>Local preview</div>
-        </header>
 
-        <section class="workspace" aria-label="Ticket pricing workspace">
-            <section class="panel booking-panel">
-                <div class="panel-heading">
-                    <div>
-                        <p class="eyebrow">01 / Build booking</p>
-                        <h2>Select seats</h2>
+
+            <nav class="nav-links">
+
+                <a href="#booking">Booking</a>
+
+                <div class="dropdown">
+
+                    <button class="dropdown-btn">
+                        Rules ▾
+                    </button>
+
+                    <div class="dropdown-menu">
+
+                        <a href="#rules">
+                            Pricing Rules
+                        </a>
+
+                        <a href="#offers">
+                            Offers
+                        </a>
+
                     </div>
-                    <span class="ticket-count" id="ticket-count">0 tickets</span>
+
                 </div>
 
-                <div class="tier-list">
-                    <article class="tier-row" data-tier="silver">
-                        <div class="tier-swatch silver"></div>
-                        <div class="tier-name"><strong>Silver</strong><span>Standard view</span></div>
-                        <label class="field compact"><span>Price</span><div class="input-prefix"><span>₹</span><input class="price-input" type="number" min="0" step="0.01" value="100.00" aria-label="Silver price"></div></label>
-                        <label class="field quantity"><span>Qty</span><input class="quantity-input" type="number" min="0" step="1" value="0" aria-label="Silver quantity"></label>
-                        <label class="availability"><input class="availability-input" type="checkbox" checked><span>Available</span></label>
-                    </article>
-                    <article class="tier-row" data-tier="gold">
-                        <div class="tier-swatch gold"></div>
-                        <div class="tier-name"><strong>Gold</strong><span>Enhanced comfort</span></div>
-                        <label class="field compact"><span>Price</span><div class="input-prefix"><span>₹</span><input class="price-input" type="number" min="0" step="0.01" value="150.00" aria-label="Gold price"></div></label>
-                        <label class="field quantity"><span>Qty</span><input class="quantity-input" type="number" min="0" step="1" value="0" aria-label="Gold quantity"></label>
-                        <label class="availability"><input class="availability-input" type="checkbox" checked><span>Available</span></label>
-                    </article>
-                    <article class="tier-row" data-tier="recliner">
-                        <div class="tier-swatch recliner"></div>
-                        <div class="tier-name"><strong>Recliner</strong><span>Premium lounge</span></div>
-                        <label class="field compact"><span>Price</span><div class="input-prefix"><span>₹</span><input class="price-input" type="number" min="0" step="0.01" value="250.00" aria-label="Recliner price"></div></label>
-                        <label class="field quantity"><span>Qty</span><input class="quantity-input" type="number" min="0" step="1" value="0" aria-label="Recliner quantity"></label>
-                        <label class="availability"><input class="availability-input" type="checkbox" checked><span>Available</span></label>
-                    </article>
+                <a href="#bill">
+                    Bill
+                </a>
+
+            </nav>
+
+
+            <div class="api-status" id="api-status">
+
+                <span class="status-dot"></span>
+                Local preview
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- =========================
+         HERO
+    ========================== -->
+
+    <section class="hero">
+
+        <div class="hero-container">
+
+            <div class="hero-content">
+
+                <div class="hero-badge">
+                    SMART TICKET PRICING
                 </div>
 
-                <div class="settings">
-                    <div class="setting-copy"><span class="setting-icon">%</span><div><strong>Membership offer</strong><span>5% off after festival discount, capped at ₹100</span></div></div>
-                    <label class="toggle"><input id="member-toggle" type="checkbox"><span class="toggle-track"></span><span class="sr-only">Apply membership offer</span></label>
-                </div>
+                <h1>
+                    Friday night at the
+                    <span>multiplex.</span>
+                </h1>
 
-                <div class="rules-note"><span>i</span><p>Festival offer is active: 10% off base tickets. Convenience fee is ₹20 per ticket. GST is 18% on the discounted amount plus fee.</p></div>
-            </section>
+                <p>
+                    A reliable ticket pricing engine that handles
+                    seat tiers, availability, offers, convenience
+                    fees and GST with an exact billing breakdown.
+                </p>
 
-            <aside class="panel bill-panel">
-                <div class="panel-heading">
-                    <div>
-                        <p class="eyebrow">02 / Review</p>
-                        <h2>Booking bill</h2>
+
+                <!-- MOVIE SELECTOR -->
+
+                <div class="movie-selector">
+
+                    <div class="select-box">
+
+                        <label>
+                            MOVIE
+                        </label>
+
+                        <select id="movie-select">
+
+                            <option value="The Last Horizon">
+                                The Last Horizon
+                            </option>
+
+                            <option value="Neon City">
+                                Neon City
+                            </option>
+
+                            <option value="Mountain Echo">
+                                Mountain Echo
+                            </option>
+
+                        </select>
+
                     </div>
-                    <span class="bill-id">LIVE</span>
+
+
+                    <div class="select-box">
+
+                        <label>
+                            DATE
+                        </label>
+
+                        <select id="date-select">
+
+                            <option value="Friday, 18 Sep">
+                                Friday, 18 Sep
+                            </option>
+
+                            <option value="Saturday, 19 Sep">
+                                Saturday, 19 Sep
+                            </option>
+
+                            <option value="Sunday, 20 Sep">
+                                Sunday, 20 Sep
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="select-box">
+
+                        <label>
+                            SHOWTIME
+                        </label>
+
+                        <select id="time-select">
+
+                            <option value="10:30 AM">
+                                10:30 AM
+                            </option>
+
+                            <option value="02:30 PM">
+                                02:30 PM
+                            </option>
+
+                            <option value="07:30 PM">
+                                07:30 PM
+                            </option>
+
+                            <option value="10:30 PM">
+                                10:30 PM
+                            </option>
+
+                        </select>
+
+                    </div>
+
                 </div>
-                <div id="bill-message" class="bill-message">Add tickets to begin</div>
-                <div id="line-items" class="line-items"></div>
-                <div class="bill-breakdown">
-                    <div><span>Base amount</span><strong id="base-amount">₹0.00</strong></div>
-                    <div class="discount"><span>Festival discount</span><strong id="festival-discount">-₹0.00</strong></div>
-                    <div class="discount"><span>Member discount</span><strong id="member-discount">-₹0.00</strong></div>
-                    <div class="separator"></div>
-                    <div><span>Convenience fee</span><strong id="convenience-fee">₹0.00</strong></div>
-                    <div><span>GST</span><strong id="gst">₹0.00</strong></div>
+
+
+                <a href="#booking" class="hero-button">
+                    Book Tickets →
+                </a>
+
+            </div>
+
+
+            <!-- MOVIE CARD -->
+
+            <div class="movie-card">
+
+                <div class="movie-poster">
+
+                    <div class="poster-content">
+
+                        <span>
+                            NOW SHOWING
+                        </span>
+
+                        <div class="film-icon">
+                            🎥
+                        </div>
+
+                        <h3 id="selected-movie">
+                            The Last Horizon
+                        </h3>
+
+                        <p>
+                            EXPERIENCE THE MOVIE
+                        </p>
+
+                    </div>
+
                 </div>
-                <div class="total-row"><span>Final total</span><strong id="final-total">₹0.00</strong></div>
-                <button class="primary-button" id="clear-button" type="button">Clear booking <span aria-hidden="true">↗</span></button>
-            </aside>
+
+
+                <div class="movie-card-info">
+
+                    <div>
+
+                        <strong>
+                            The Last Horizon
+                        </strong>
+
+                        <span id="show-summary">
+                            The Last Horizon • Friday, 18 Sep • 10:30 AM
+                        </span>
+
+                    </div>
+
+                    <div class="rating">
+                        ★ 8.7
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         BOOKING
+    ========================== -->
+
+    <main id="booking">
+
+
+        <!-- LEFT SIDE -->
+
+        <section>
+
+            <div class="section-heading">
+
+                <div>
+
+                    <span class="section-label">
+                        SELECT YOUR SEATS
+                    </span>
+
+                    <h2>
+                        Ticket tiers
+                    </h2>
+
+                    <p>
+                        Choose the number of tickets for each tier.
+                    </p>
+
+                </div>
+
+
+                <div class="show-info">
+
+                    Friday • 10:30 AM
+
+                </div>
+
+            </div>
+
+
+            <!-- CINEMA SCREEN -->
+
+            <div class="screen-area">
+
+                <div class="screen"></div>
+
+                <p>
+                    SCREEN THIS WAY
+                </p>
+
+            </div>
+
+
+            <!-- SEAT GRID -->
+
+            <div class="seat-grid">
+
+
+                <!-- =================
+                     SILVER
+                ================== -->
+
+                <div
+                    class="tier-card tier-row"
+                    data-tier="silver"
+                >
+
+                    <div class="tier-top">
+
+                        <div class="seat-icon">
+                            S
+                        </div>
+
+
+                        <div class="tier-name">
+
+                            <strong>
+                                Silver
+                            </strong>
+
+                            <span>
+                                Standard seating
+                            </span>
+
+                        </div>
+
+
+                        <label class="availability">
+
+                            <input
+                                type="checkbox"
+                                class="availability-input"
+                                checked
+                            >
+
+                            <span></span>
+
+                        </label>
+
+                    </div>
+
+
+                    <div class="tier-middle">
+
+                        <div>
+
+                            <span class="small-label">
+                                PRICE / TICKET
+                            </span>
+
+                            <div class="price-wrapper">
+
+                                ₹
+
+                                <input
+                                    type="number"
+                                    class="price-input"
+                                    value="100"
+                                    min="0"
+                                    step="0.01"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="seat-capacity">
+
+                            <span>
+                                STATUS
+                            </span>
+
+                            <strong>
+                                AVAILABLE
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="quantity-control">
+
+                        <button
+                            type="button"
+                            class="qty-btn"
+                            data-action="decrease"
+                        >
+                            −
+                        </button>
+
+
+                        <input
+                            type="number"
+                            class="quantity-input"
+                            value="0"
+                            min="0"
+                        >
+
+
+                        <button
+                            type="button"
+                            class="qty-btn"
+                            data-action="increase"
+                        >
+                            +
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================
+                     GOLD
+                ================== -->
+
+                <div
+                    class="tier-card tier-row"
+                    data-tier="gold"
+                >
+
+                    <div class="tier-top">
+
+                        <div class="seat-icon">
+                            G
+                        </div>
+
+
+                        <div class="tier-name">
+
+                            <strong>
+                                Gold
+                            </strong>
+
+                            <span>
+                                Premium seating
+                            </span>
+
+                        </div>
+
+
+                        <label class="availability">
+
+                            <input
+                                type="checkbox"
+                                class="availability-input"
+                                checked
+                            >
+
+                            <span></span>
+
+                        </label>
+
+                    </div>
+
+
+                    <div class="tier-middle">
+
+                        <div>
+
+                            <span class="small-label">
+                                PRICE / TICKET
+                            </span>
+
+                            <div class="price-wrapper">
+
+                                ₹
+
+                                <input
+                                    type="number"
+                                    class="price-input"
+                                    value="150"
+                                    min="0"
+                                    step="0.01"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="seat-capacity">
+
+                            <span>
+                                STATUS
+                            </span>
+
+                            <strong>
+                                AVAILABLE
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="quantity-control">
+
+                        <button
+                            type="button"
+                            class="qty-btn"
+                            data-action="decrease"
+                        >
+                            −
+                        </button>
+
+
+                        <input
+                            type="number"
+                            class="quantity-input"
+                            value="0"
+                            min="0"
+                        >
+
+
+                        <button
+                            type="button"
+                            class="qty-btn"
+                            data-action="increase"
+                        >
+                            +
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================
+                     RECLINER
+                ================== -->
+
+                <div
+                    class="tier-card tier-row"
+                    data-tier="recliner"
+                >
+
+                    <div class="tier-top">
+
+                        <div class="seat-icon">
+                            R
+                        </div>
+
+
+                        <div class="tier-name">
+
+                            <strong>
+                                Recliner
+                            </strong>
+
+                            <span>
+                                Luxury seating
+                            </span>
+
+                        </div>
+
+
+                        <label class="availability">
+
+                            <input
+                                type="checkbox"
+                                class="availability-input"
+                                checked
+                            >
+
+                            <span></span>
+
+                        </label>
+
+                    </div>
+
+
+                    <div class="tier-middle">
+
+                        <div>
+
+                            <span class="small-label">
+                                PRICE / TICKET
+                            </span>
+
+                            <div class="price-wrapper">
+
+                                ₹
+
+                                <input
+                                    type="number"
+                                    class="price-input"
+                                    value="250"
+                                    min="0"
+                                    step="0.01"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="seat-capacity">
+
+                            <span>
+                                STATUS
+                            </span>
+
+                            <strong>
+                                AVAILABLE
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="quantity-control">
+
+                        <button
+                            type="button"
+                            class="qty-btn"
+                            data-action="decrease"
+                        >
+                            −
+                        </button>
+
+
+                        <input
+                            type="number"
+                            class="quantity-input"
+                            value="0"
+                            min="0"
+                        >
+
+
+                        <button
+                            type="button"
+                            class="qty-btn"
+                            data-action="increase"
+                        >
+                            +
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =========================
+                 BOOKING OPTIONS
+            ========================== -->
+
+            <div class="booking-options">
+
+
+                <!-- MEMBER -->
+
+                <div class="member-card">
+
+                    <div class="member-icon">
+                        ★
+                    </div>
+
+
+                    <div class="member-text">
+
+                        <strong>
+                            CineBill Member
+                        </strong>
+
+                        <span>
+                            Get 5% off, up to ₹100
+                        </span>
+
+                    </div>
+
+
+                    <label class="switch">
+
+                        <input
+                            type="checkbox"
+                            id="member-toggle"
+                        >
+
+                        <span class="slider"></span>
+
+                    </label>
+
+                </div>
+
+
+                <!-- RULES -->
+
+                <div
+                    class="rules-card"
+                    id="rules"
+                >
+
+                    <div class="rules-title">
+                        PRICING RULES
+                    </div>
+
+
+                    <div class="rules-list">
+
+                        <span>
+                            Festival discount
+                            <b>10%</b>
+                        </span>
+
+                        <span>
+                            Member discount
+                            <b>5%</b>
+                        </span>
+
+                        <span>
+                            Member cap
+                            <b>₹100</b>
+                        </span>
+
+                        <span>
+                            Convenience fee
+                            <b>₹20 / ticket</b>
+                        </span>
+
+                        <span>
+                            GST
+                            <b>18%</b>
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
         </section>
-        <footer><span>Exact paisa pricing</span><span>All amounts in INR</span><span>Ready for checkout</span></footer>
+
+
+        <!-- =========================
+             BILL
+        ========================== -->
+
+        <aside id="bill">
+
+            <div class="bill-card">
+
+
+                <div class="bill-header">
+
+                    <div>
+
+                        <span class="section-label">
+                            BOOKING SUMMARY
+                        </span>
+
+                        <h2>
+                            Your bill
+                        </h2>
+
+                    </div>
+
+
+                    <div
+                        class="ticket-count"
+                        id="ticket-count"
+                    >
+                        0 tickets
+                    </div>
+
+                </div>
+
+
+                <div class="receipt-heading">
+                    TICKET BREAKDOWN
+                </div>
+
+
+                <div id="line-items">
+
+                    <div class="line-item">
+
+                        <span>
+                            No tickets selected
+                        </span>
+
+                        <span>
+                            ₹0.00
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="receipt-divider"></div>
+
+
+                <div class="price-breakdown">
+
+
+                    <div class="bill-row">
+
+                        <span>
+                            Base amount
+                        </span>
+
+                        <strong id="base-amount">
+                            ₹0.00
+                        </strong>
+
+                    </div>
+
+
+                    <div class="bill-row discount">
+
+                        <span>
+                            Festival discount
+                        </span>
+
+                        <strong id="festival-discount">
+                            -₹0.00
+                        </strong>
+
+                    </div>
+
+
+                    <div class="bill-row discount">
+
+                        <span>
+                            Member discount
+                        </span>
+
+                        <strong id="member-discount">
+                            -₹0.00
+                        </strong>
+
+                    </div>
+
+
+                    <div class="bill-row">
+
+                        <span>
+                            Convenience fee
+                        </span>
+
+                        <strong id="convenience-fee">
+                            ₹0.00
+                        </strong>
+
+                    </div>
+
+
+                    <div class="bill-row">
+
+                        <span>
+                            GST
+                        </span>
+
+                        <strong id="gst">
+                            ₹0.00
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- TOTAL -->
+
+                <div class="total-box">
+
+                    <div>
+
+                        <span>
+                            TOTAL PAYABLE
+                        </span>
+
+                        <strong id="final-total">
+                            ₹0.00
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="bill-message"
+                    id="bill-message"
+                >
+                    Select tickets to begin
+                </div>
+
+
+                <button
+                    type="button"
+                    class="clear-button"
+                    id="clear-button"
+                >
+                    Clear booking
+                </button>
+
+            </div>
+
+        </aside>
+
     </main>
+
+
+    <!-- =========================
+         OFFERS
+    ========================== -->
+
+    <section
+        class="offers-section"
+        id="offers"
+    >
+
+        <div class="offers-container">
+
+            <div class="section-heading center">
+
+                <div>
+
+                    <span class="section-label">
+                        SPECIAL OFFERS
+                    </span>
+
+                    <h2>
+                        More value with every booking
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="offer-grid">
+
+
+                <div class="offer-card">
+
+                    <div class="offer-icon">
+                        🎉
+                    </div>
+
+                    <h3>
+                        Festival Offer
+                    </h3>
+
+                    <p>
+                        Enjoy a 10% festival discount
+                        on your ticket booking.
+                    </p>
+
+                    <span>
+                        10% OFF
+                    </span>
+
+                </div>
+
+
+                <div class="offer-card">
+
+                    <div class="offer-icon">
+                        ⭐
+                    </div>
+
+                    <h3>
+                        Member Benefit
+                    </h3>
+
+                    <p>
+                        Members receive an additional
+                        5% discount up to ₹100.
+                    </p>
+
+                    <span>
+                        UP TO ₹100 OFF
+                    </span>
+
+                </div>
+
+
+                <div class="offer-card">
+
+                    <div class="offer-icon">
+                        🎟️
+                    </div>
+
+                    <h3>
+                        Flexible Seating
+                    </h3>
+
+                    <p>
+                        Choose from Silver, Gold and
+                        Recliner seating options.
+                    </p>
+
+                    <span>
+                        3 TIERS
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
+    <footer>
+
+        <div class="footer-container">
+
+
+            <div class="footer-brand">
+
+                <div class="logo">
+
+                    <div class="logo-icon">
+                        🎬
+                    </div>
+
+                    <div>
+
+                        <h2>
+                            CineBill
+                        </h2>
+
+                        <span>
+                            PRICING ENGINE
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <p>
+                    A cinema ticket pricing engine built
+                    to provide accurate calculations,
+                    transparent billing and reliable
+                    booking rules.
+                </p>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <h4>
+                    BOOKING
+                </h4>
+
+                <a href="#booking">
+                    Ticket Tiers
+                </a>
+
+                <a href="#booking">
+                    Membership
+                </a>
+
+                <a href="#bill">
+                    Bill Summary
+                </a>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <h4>
+                    RULES
+                </h4>
+
+                <a href="#rules">
+                    Discounts
+                </a>
+
+                <a href="#rules">
+                    Convenience Fee
+                </a>
+
+                <a href="#rules">
+                    GST
+                </a>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <h4>
+                    OFFERS
+                </h4>
+
+                <a href="#offers">
+                    Festival
+                </a>
+
+                <a href="#offers">
+                    Membership
+                </a>
+
+                <a href="#offers">
+                    Seating
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <div class="footer-bottom">
+
+            <span>
+                © 2026 CineBill Pricing Engine
+            </span>
+
+            <span>
+                Exact billing • Transparent pricing
+            </span>
+
+        </div>
+
+    </footer>
+
+
+    <!-- =========================
+         JAVASCRIPT
+    ========================== -->
+
+    <script src="app.js" defer></script>
+
 </body>
+
 </html>

@@ -1,95 +1,981 @@
-const RULES = Object.freeze({
+// ========================================
+// MULTIPLEX TICKET PRICING ENGINE
+// ========================================
+
+
+// ========================================
+// PRICING RULES
+// ========================================
+
+const RULES = {
     festivalRate: 0.10,
     memberRate: 0.05,
     memberCap: 100,
     convenienceFee: 20,
     gstRate: 0.18
-});
-const API_URL = 'http://localhost:8081/api/calculate';
+};
 
-const currency = amount => `₹${amount.toFixed(2)}`;
-const money = amount => Math.round((amount + Number.EPSILON) * 100) / 100;
-const rows = [...document.querySelectorAll('.tier-row')];
-const memberToggle = document.querySelector('#member-toggle');
 
-function collectBooking() {
-    let ticketCount = 0;
+// ========================================
+// GET HTML ELEMENTS
+// ========================================
+
+const rows = document.querySelectorAll(".tier-row");
+
+const memberToggle =
+    document.getElementById("member-toggle");
+
+
+// ========================================
+// MONEY FUNCTIONS
+// ========================================
+
+function roundMoney(value) {
+
+    return Math.round(
+        (Number(value) + Number.EPSILON) * 100
+    ) / 100;
+
+}
+
+
+function currency(value) {
+
+    return "₹" + roundMoney(value).toFixed(2);
+
+}
+
+
+// ========================================
+// CALCULATE BILL
+// ========================================
+
+function calculateBill() {
+
     let baseAmount = 0;
-    const lineItems = [];
-    let unavailableSelection = false;
-    const form = new URLSearchParams();
-    form.set('member', memberToggle.checked);
 
-    rows.forEach(row => {
-        const key = row.dataset.tier;
-        const quantity = Math.max(0, Number(row.querySelector('.quantity-input').value) || 0);
-        const price = Math.max(0, Number(row.querySelector('.price-input').value) || 0);
-        const available = row.querySelector('.availability-input').checked;
-        const tier = row.querySelector('.tier-name strong').textContent;
-        form.set(`${key}Quantity`, quantity);
-        form.set(`${key}Price`, price.toFixed(2));
-        form.set(`${key}Available`, available);
-        row.classList.toggle('sold-out', !available);
+    let ticketCount = 0;
+
+    let unavailableSelected = false;
+
+    let lineItems = [];
+
+
+    // ------------------------------------
+    // READ EACH SEAT TYPE
+    // ------------------------------------
+
+    rows.forEach(function(row) {
+
+        const tier =
+            row.dataset.tier;
+
+
+        const priceInput =
+            row.querySelector(".price-input");
+
+
+        const quantityInput =
+            row.querySelector(".quantity-input");
+
+
+        const availabilityInput =
+            row.querySelector(".availability-input");
+
+
+        const tierNameElement =
+            row.querySelector(".tier-name strong");
+
+
+        // --------------------------------
+        // GET VALUES
+        // --------------------------------
+
+        const price =
+            Number(priceInput.value) || 0;
+
+
+        const quantity =
+            Math.max(
+                0,
+                parseInt(quantityInput.value) || 0
+            );
+
+
+        const available =
+            availabilityInput.checked;
+
+
+        const tierName =
+            tierNameElement
+                ? tierNameElement.textContent
+                : tier;
+
+
+        // --------------------------------
+        // UPDATE SOLD OUT CLASS
+        // --------------------------------
+
+        row.classList.toggle(
+            "sold-out",
+            !available
+        );
+
+
+        // --------------------------------
+        // TICKET COUNT
+        // --------------------------------
+
         ticketCount += quantity;
-        if (quantity > 0 && !available) unavailableSelection = true;
-        if (quantity > 0) {
-            const amount = quantity * price;
-            baseAmount += amount;
-            lineItems.push({ tier, quantity, amount });
+
+
+        // --------------------------------
+        // UNAVAILABLE CHECK
+        // --------------------------------
+
+        if (
+            quantity > 0 &&
+            !available
+        ) {
+
+            unavailableSelected = true;
+
         }
+
+
+        // --------------------------------
+        // CALCULATE TIER PRICE
+        // --------------------------------
+
+        if (quantity > 0) {
+
+            const amount =
+                roundMoney(
+                    price * quantity
+                );
+
+
+            baseAmount += amount;
+
+
+            lineItems.push({
+
+                tier: tierName,
+
+                quantity: quantity,
+
+                amount: amount
+
+            });
+
+        }
+
     });
 
-    return { form, ticketCount, baseAmount, lineItems, unavailableSelection };
-}
 
-function renderBill(values) {
-    const { ticketCount, lineItems, unavailableSelection } = values;
-    const festivalDiscount = values.festivalDiscount ?? money(values.baseAmount * RULES.festivalRate);
-    const memberDiscount = values.memberDiscount ?? (memberToggle.checked ? Math.min(money((values.baseAmount - festivalDiscount) * RULES.memberRate), RULES.memberCap) : 0);
-    const convenienceFee = values.convenienceFee ?? ticketCount * RULES.convenienceFee;
-    const gst = values.gst ?? money((values.baseAmount - festivalDiscount - memberDiscount + convenienceFee) * RULES.gstRate);
-    const finalTotal = values.finalAmount ?? money(values.baseAmount - festivalDiscount - memberDiscount + convenienceFee + gst);
+    baseAmount =
+        roundMoney(baseAmount);
 
-    document.querySelector('#ticket-count').textContent = `${ticketCount} ticket${ticketCount === 1 ? '' : 's'}`;
-    document.querySelector('#line-items').innerHTML = lineItems.map(item => `<div class="line-item"><span>${item.tier} × ${item.quantity}</span><span>${currency(item.amount)}</span></div>`).join('');
-    document.querySelector('#bill-message').textContent = unavailableSelection ? 'Unavailable tier selected' : ticketCount ? 'Ready for review' : 'Add tickets to begin';
-    document.querySelector('#base-amount').textContent = currency(values.baseAmount);
-    document.querySelector('#festival-discount').textContent = `-${currency(festivalDiscount)}`;
-    document.querySelector('#member-discount').textContent = `-${currency(memberDiscount)}`;
-    document.querySelector('#convenience-fee').textContent = currency(convenienceFee);
-    document.querySelector('#gst').textContent = currency(gst);
-    document.querySelector('#final-total').textContent = unavailableSelection ? 'Unavailable' : currency(finalTotal);
-}
 
-let requestNumber = 0;
-async function update() {
-    const booking = collectBooking();
-    const festivalDiscount = money(booking.baseAmount * RULES.festivalRate);
-    const afterFestival = booking.baseAmount - festivalDiscount;
-    const memberDiscount = memberToggle.checked ? Math.min(money(afterFestival * RULES.memberRate), RULES.memberCap) : 0;
-    const convenienceFee = booking.ticketCount * RULES.convenienceFee;
-    const gst = money((afterFestival - memberDiscount + convenienceFee) * RULES.gstRate);
-    const finalAmount = money(afterFestival - memberDiscount + convenienceFee + gst);
-    renderBill({ ...booking, festivalDiscount, memberDiscount, convenienceFee, gst, finalAmount });
+    // ====================================
+    // FESTIVAL DISCOUNT
+    // ====================================
 
-    const currentRequest = ++requestNumber;
-    try {
-        const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: booking.form });
-        if (!response.ok) throw new Error('API rejected booking');
-        const serverBill = await response.json();
-        if (currentRequest !== requestNumber) return;
-        document.querySelector('#api-status').innerHTML = '<span class="status-dot"></span>API connected';
-        renderBill({ ...booking, ...serverBill, lineItems: booking.lineItems });
-    } catch (error) {
-        document.querySelector('#api-status').innerHTML = '<span class="status-dot"></span>Local preview';
+    const festivalDiscount =
+        roundMoney(
+            baseAmount *
+            RULES.festivalRate
+        );
+
+
+    const afterFestival =
+        roundMoney(
+            baseAmount -
+            festivalDiscount
+        );
+
+
+    // ====================================
+    // MEMBER DISCOUNT
+    // ====================================
+
+    let memberDiscount = 0;
+
+
+    if (
+        memberToggle &&
+        memberToggle.checked
+    ) {
+
+        memberDiscount =
+            roundMoney(
+                afterFestival *
+                RULES.memberRate
+            );
+
+
+        memberDiscount =
+            Math.min(
+                memberDiscount,
+                RULES.memberCap
+            );
+
     }
+
+
+    // ====================================
+    // CONVENIENCE FEE
+    // ====================================
+
+    const convenienceFee =
+        roundMoney(
+            ticketCount *
+            RULES.convenienceFee
+        );
+
+
+    // ====================================
+    // TAXABLE AMOUNT
+    // ====================================
+
+    const taxableAmount =
+        roundMoney(
+            afterFestival -
+            memberDiscount +
+            convenienceFee
+        );
+
+
+    // ====================================
+    // GST
+    // ====================================
+
+    const gst =
+        roundMoney(
+            taxableAmount *
+            RULES.gstRate
+        );
+
+
+    // ====================================
+    // FINAL TOTAL
+    // ====================================
+
+    const finalTotal =
+        roundMoney(
+            taxableAmount +
+            gst
+        );
+
+
+    return {
+
+        ticketCount,
+
+        baseAmount,
+
+        festivalDiscount,
+
+        memberDiscount,
+
+        convenienceFee,
+
+        gst,
+
+        finalTotal,
+
+        lineItems,
+
+        unavailableSelected
+
+    };
+
 }
 
-document.querySelectorAll('input').forEach(input => input.addEventListener('input', update));
-document.querySelectorAll('input[type="checkbox"]').forEach(input => input.addEventListener('change', update));
-document.querySelector('#clear-button').addEventListener('click', () => {
-    rows.forEach(row => { row.querySelector('.quantity-input').value = 0; });
-    memberToggle.checked = false;
-    update();
-});
-update();
+
+// ========================================
+// UPDATE BILL ON SCREEN
+// ========================================
+
+function updateBill() {
+
+    const bill =
+        calculateBill();
+
+
+    // ====================================
+    // TICKET COUNT
+    // ====================================
+
+    const ticketCountElement =
+        document.getElementById(
+            "ticket-count"
+        );
+
+
+    if (ticketCountElement) {
+
+        ticketCountElement.textContent =
+            bill.ticketCount +
+            (
+                bill.ticketCount === 1
+                    ? " ticket"
+                    : " tickets"
+            );
+
+    }
+
+
+    // ====================================
+    // LINE ITEMS
+    // ====================================
+
+    const lineItemsElement =
+        document.getElementById(
+            "line-items"
+        );
+
+
+    if (lineItemsElement) {
+
+        if (bill.lineItems.length === 0) {
+
+            lineItemsElement.innerHTML = `
+                <div class="line-item">
+                    <span>No tickets selected</span>
+                    <span>₹0.00</span>
+                </div>
+            `;
+
+        } else {
+
+            lineItemsElement.innerHTML =
+                bill.lineItems.map(
+                    function(item) {
+
+                        return `
+                            <div class="line-item">
+                                <span>
+                                    ${item.tier} × ${item.quantity}
+                                </span>
+
+                                <span>
+                                    ${currency(item.amount)}
+                                </span>
+                            </div>
+                        `;
+
+                    }
+                ).join("");
+
+        }
+
+    }
+
+
+    // ====================================
+    // BASE AMOUNT
+    // ====================================
+
+    const baseElement =
+        document.getElementById(
+            "base-amount"
+        );
+
+
+    if (baseElement) {
+
+        baseElement.textContent =
+            currency(
+                bill.baseAmount
+            );
+
+    }
+
+
+    // ====================================
+    // FESTIVAL DISCOUNT
+    // ====================================
+
+    const festivalElement =
+        document.getElementById(
+            "festival-discount"
+        );
+
+
+    if (festivalElement) {
+
+        festivalElement.textContent =
+            "-" +
+            currency(
+                bill.festivalDiscount
+            );
+
+    }
+
+
+    // ====================================
+    // MEMBER DISCOUNT
+    // ====================================
+
+    const memberElement =
+        document.getElementById(
+            "member-discount"
+        );
+
+
+    if (memberElement) {
+
+        memberElement.textContent =
+            "-" +
+            currency(
+                bill.memberDiscount
+            );
+
+    }
+
+
+    // ====================================
+    // CONVENIENCE FEE
+    // ====================================
+
+    const feeElement =
+        document.getElementById(
+            "convenience-fee"
+        );
+
+
+    if (feeElement) {
+
+        feeElement.textContent =
+            currency(
+                bill.convenienceFee
+            );
+
+    }
+
+
+    // ====================================
+    // GST
+    // ====================================
+
+    const gstElement =
+        document.getElementById(
+            "gst"
+        );
+
+
+    if (gstElement) {
+
+        gstElement.textContent =
+            currency(
+                bill.gst
+            );
+
+    }
+
+
+    // ====================================
+    // FINAL TOTAL
+    // ====================================
+
+    const finalElement =
+        document.getElementById(
+            "final-total"
+        );
+
+
+    if (finalElement) {
+
+        if (bill.unavailableSelected) {
+
+            finalElement.textContent =
+                "Unavailable";
+
+        } else {
+
+            finalElement.textContent =
+                currency(
+                    bill.finalTotal
+                );
+
+        }
+
+    }
+
+
+    // ====================================
+    // MESSAGE
+    // ====================================
+
+    const messageElement =
+        document.getElementById(
+            "bill-message"
+        );
+
+
+    if (messageElement) {
+
+        if (bill.unavailableSelected) {
+
+            messageElement.textContent =
+                "⚠ Unavailable tier selected";
+
+        } else if (bill.ticketCount > 0) {
+
+            messageElement.textContent =
+                "✓ Booking ready for review";
+
+        } else {
+
+            messageElement.textContent =
+                "Select tickets to begin";
+
+        }
+
+    }
+
+
+    // ====================================
+    // UPDATE STATUS TEXT
+    // ====================================
+
+    rows.forEach(function(row) {
+
+        const availabilityInput =
+            row.querySelector(
+                ".availability-input"
+            );
+
+
+        const statusElement =
+            row.querySelector(
+                ".seat-capacity strong"
+            );
+
+
+        if (
+            statusElement &&
+            availabilityInput
+        ) {
+
+            if (availabilityInput.checked) {
+
+                statusElement.textContent =
+                    "AVAILABLE";
+
+            } else {
+
+                statusElement.textContent =
+                    "SOLD OUT";
+
+            }
+
+        }
+
+    });
+
+}
+
+
+// ========================================
+// PLUS / MINUS BUTTONS
+// ========================================
+
+const quantityButtons =
+    document.querySelectorAll(
+        ".qty-btn"
+    );
+
+
+quantityButtons.forEach(
+    function(button) {
+
+        button.addEventListener(
+            "click",
+            function(event) {
+
+                event.preventDefault();
+
+
+                // Find the quantity box
+                // belonging to this button
+
+                const control =
+                    button.closest(
+                        ".quantity-control"
+                    );
+
+
+                if (!control) {
+
+                    console.log(
+                        "Quantity control not found"
+                    );
+
+                    return;
+
+                }
+
+
+                const input =
+                    control.querySelector(
+                        ".quantity-input"
+                    );
+
+
+                if (!input) {
+
+                    console.log(
+                        "Quantity input not found"
+                    );
+
+                    return;
+
+                }
+
+
+                let quantity =
+                    parseInt(
+                        input.value
+                    ) || 0;
+
+
+                // =================================
+                // INCREASE
+                // =================================
+
+                if (
+                    button.dataset.action ===
+                    "increase"
+                ) {
+
+                    quantity++;
+
+                }
+
+
+                // =================================
+                // DECREASE
+                // =================================
+
+                if (
+                    button.dataset.action ===
+                    "decrease"
+                ) {
+
+                    quantity =
+                        Math.max(
+                            0,
+                            quantity - 1
+                        );
+
+                }
+
+
+                // Put new value in input
+
+                input.value =
+                    quantity;
+
+
+                // Recalculate bill
+
+                updateBill();
+
+            }
+        );
+
+    }
+);
+
+
+// ========================================
+// MANUAL QUANTITY INPUT
+// ========================================
+
+document
+    .querySelectorAll(
+        ".quantity-input"
+    )
+    .forEach(
+        function(input) {
+
+            input.addEventListener(
+                "input",
+                function() {
+
+                    let value =
+                        parseInt(
+                            input.value
+                        ) || 0;
+
+
+                    if (value < 0) {
+
+                        value = 0;
+
+                    }
+
+
+                    input.value =
+                        value;
+
+
+                    updateBill();
+
+                }
+            );
+
+
+            input.addEventListener(
+                "change",
+                function() {
+
+                    let value =
+                        parseInt(
+                            input.value
+                        ) || 0;
+
+
+                    if (value < 0) {
+
+                        value = 0;
+
+                    }
+
+
+                    input.value =
+                        value;
+
+
+                    updateBill();
+
+                }
+            );
+
+        }
+    );
+
+
+// ========================================
+// PRICE INPUT
+// ========================================
+
+document
+    .querySelectorAll(
+        ".price-input"
+    )
+    .forEach(
+        function(input) {
+
+            input.addEventListener(
+                "input",
+                function() {
+
+                    updateBill();
+
+                }
+            );
+
+        }
+    );
+
+
+// ========================================
+// AVAILABILITY INPUT
+// ========================================
+
+document
+    .querySelectorAll(
+        ".availability-input"
+    )
+    .forEach(
+        function(input) {
+
+            input.addEventListener(
+                "change",
+                function() {
+
+                    updateBill();
+
+                }
+            );
+
+        }
+    );
+
+
+// ========================================
+// MEMBER SWITCH
+// ========================================
+
+if (memberToggle) {
+
+    memberToggle.addEventListener(
+        "change",
+        function() {
+
+            updateBill();
+
+        }
+    );
+
+}
+
+
+// ========================================
+// CLEAR BUTTON
+// ========================================
+
+const clearButton =
+    document.getElementById(
+        "clear-button"
+    );
+
+
+if (clearButton) {
+
+    clearButton.addEventListener(
+        "click",
+        function() {
+
+
+            // Reset all quantities
+
+            document
+                .querySelectorAll(
+                    ".quantity-input"
+                )
+                .forEach(
+                    function(input) {
+
+                        input.value = 0;
+
+                    }
+                );
+
+
+            // Turn membership off
+
+            if (memberToggle) {
+
+                memberToggle.checked =
+                    false;
+
+            }
+
+
+            // Recalculate
+
+            updateBill();
+
+        }
+    );
+
+}
+
+
+// ========================================
+// MOVIE INFORMATION
+// ========================================
+
+function updateShowInformation() {
+
+    const movieSelect =
+        document.getElementById(
+            "movie-select"
+        );
+
+
+    const dateSelect =
+        document.getElementById(
+            "date-select"
+        );
+
+
+    const timeSelect =
+        document.getElementById(
+            "time-select"
+        );
+
+
+    const selectedMovie =
+        document.getElementById(
+            "selected-movie"
+        );
+
+
+    const showSummary =
+        document.getElementById(
+            "show-summary"
+        );
+
+
+    const movie =
+        movieSelect
+            ? movieSelect.value
+            : "Movie";
+
+
+    const date =
+        dateSelect
+            ? dateSelect.value
+            : "Today";
+
+
+    const time =
+        timeSelect
+            ? timeSelect.value
+            : "10:30 AM";
+
+
+    if (selectedMovie) {
+
+        selectedMovie.textContent =
+            movie;
+
+    }
+
+
+    if (showSummary) {
+
+        showSummary.textContent =
+            movie +
+            " • " +
+            date +
+            " • " +
+            time;
+
+    }
+
+}
+
+
+// ========================================
+// MOVIE SELECT EVENTS
+// ========================================
+
+document
+    .querySelectorAll(
+        "#movie-select, #date-select, #time-select"
+    )
+    .forEach(
+        function(select) {
+
+            select.addEventListener(
+                "change",
+                updateShowInformation
+            );
+
+        }
+    );
+
+
+// ========================================
+// INITIAL LOAD
+// ========================================
+
+updateShowInformation();
+
+updateBill();
